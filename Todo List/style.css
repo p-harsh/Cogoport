@@ -1,0 +1,84 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+table {
+    font-family: arial, sans-serif;
+    max-width: 90%;
+    padding: 16px;
+    margin-inline: auto;
+    border-collapse: collapse;
+}
+
+tr {
+    width: 100%;
+}
+
+td,
+th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    width: fit-content;
+}
+
+tr:nth-child(even) {
+    background-color: #eee;
+}
+
+
+.task-input-row{
+    position: sticky;
+    z-index: 1;
+    top: 0;
+    padding-block: 16px;
+    background: white;
+    box-shadow: 0.5px 4px 4px 0px rgba(225, 225, 225, 0.363);
+}
+
+.task-input-row h2{
+    padding-bottom: 8px;
+}
+
+.task-input-row input {
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    border: 2px solid rgb(184, 184, 184);
+    width: 40%;
+}
+.task-input-row input:focus{
+    outline: none;
+    border: 2px solid grey;
+}
+.task-input-row button,
+.delete-btn {
+    padding: 10px 16px;
+    background: green;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.task-input-row {
+    text-align: center;
+    margin: 12px 0;
+}
+#task-wrapper button {
+    background: red;
+}
+tr th:nth-child(2), tr td:nth-child(2){
+    width: min(70dvw, 500px);
+    /* width: 70dvw; */
+}
+
+#task-table{
+    position: relative;
+}
+
+th{
+    background: rgb(210, 210, 210);
+    position: sticky;
+    top: 100px;
+}
