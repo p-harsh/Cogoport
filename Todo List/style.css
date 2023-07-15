@@ -1,11 +1,14 @@
-*{
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600&display=swap');
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
 table {
     font-family: arial, sans-serif;
-    max-width: 90%;
+    max-width: 95%;
     padding: 16px;
     margin-inline: auto;
     border-collapse: collapse;
@@ -17,18 +20,25 @@ tr {
 
 td,
 th {
-    border: 1px solid #dddddd;
+    border: 1px solid #ffffff;
     text-align: left;
     padding: 8px;
     width: fit-content;
 }
 
 tr:nth-child(even) {
-    background-color: #eee;
+    background-color: #eeeeeec0;
 }
 
+tr:nth-child(odd){
+    background-color: #eeeeee22;
+}
 
-.task-input-row{
+button{
+    font-weight: 600;
+}
+
+.task-input-row {
     position: sticky;
     z-index: 1;
     top: 0;
@@ -37,7 +47,7 @@ tr:nth-child(even) {
     box-shadow: 0.5px 4px 4px 0px rgba(225, 225, 225, 0.363);
 }
 
-.task-input-row h2{
+.task-input-row h2 {
     padding-bottom: 8px;
 }
 
@@ -48,12 +58,12 @@ tr:nth-child(even) {
     border: 2px solid rgb(184, 184, 184);
     width: 40%;
 }
-.task-input-row input:focus{
+.task-input-row input:focus {
     outline: none;
     border: 2px solid grey;
 }
 .task-input-row button,
-.delete-btn {
+.task-action-container button {
     padding: 10px 16px;
     background: green;
     color: white;
@@ -65,20 +75,172 @@ tr:nth-child(even) {
     text-align: center;
     margin: 12px 0;
 }
-#task-wrapper button {
-    background: red;
-}
-tr th:nth-child(2), tr td:nth-child(2){
+
+.task-title {
     width: min(70dvw, 500px);
-    /* width: 70dvw; */
 }
 
-#task-table{
+.task-title input[type="text"]{
+    width: 100%;
+    height: 36px;
+    padding: 0px 8px;
+    border: 1.5px solid grey;
+    border-radius: 6px;
+    outline: none;
+    font-size: 16px;
+}
+
+#task-table {
     position: relative;
 }
 
-th{
+.table-container{
+    position: relative;
+}
+
+thead {
     background: rgb(210, 210, 210);
     position: sticky;
-    top: 100px;
+    top: 115px;
+    box-shadow: 0 1px 6px rgba(169,188,218,.65);
+}
+
+th{
+    padding-block: 16px;
+}
+
+/*  */
+/*  */
+/*  */
+
+input[type="checkbox"]{
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.task-action-container .edit-btn{
+    background: rgba(0, 128, 0, 0.1);
+    border-radius: 8px;
+}
+
+.task-action-container .delete-btn{
+    background: rgba(128, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.task-action-container .save-btn{
+    background: #13aeeb1a;
+    border-radius: 8px;
+}
+
+.task-action-container span, .task-action-container img{
+    width: 20px;
+    height: 20px;
+}
+
+.task-action-container button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 10px;
+    width: 36px;
+    height: 36px;
+}
+
+/*  */
+/*  */
+/*  */
+
+.loading-active{
+    display: block;
+}
+
+.loading-inactive{
+    display: none;
+}
+
+.loading{
+    width: 100dvw;
+    height: 100dvh;
+    background: rgba(0, 0, 0, 0.474);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.lds-ellipsis {
+    display: inline-block;
+    position: relative;
+}
+.lds-ellipsis div {
+    position: absolute;
+    top: 33px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #fff;
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+.lds-ellipsis div:nth-child(1) {
+    left: 8px;
+    animation: lds-ellipsis1 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(2) {
+    left: 8px;
+    animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(3) {
+    left: 32px;
+    animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(4) {
+    left: 56px;
+    animation: lds-ellipsis3 0.6s infinite;
+}
+@keyframes lds-ellipsis1 {
+    0% {
+        transform: scale(0);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+@keyframes lds-ellipsis3 {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0);
+    }
+}
+@keyframes lds-ellipsis2 {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(24px, 0);
+    }
+}
+
+
+.messages-container{
+    height: 24px;
+    position: fixed; 
+    width: 90%;
+    top: 160px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
+    padding-block: 16px;
+    transition: left 0.5s;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-inline: 8px;
+    opacity: 0;
+    transition: opacity 0.5s;
 }
