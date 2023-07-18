@@ -65,7 +65,7 @@ button{
 .task-input-row button,
 .task-action-container button {
     padding: 10px 16px;
-    background: green;
+    background: #3aa13a;
     color: white;
     border: none;
     border-radius: 4px;
