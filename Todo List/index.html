@@ -24,8 +24,60 @@
             <h2 style="text-align:center;">
                 To Do List
             </h2>
-            <input autofocus id="task-input" type='text' />
-            <button onclick="addTask()">Add</button>
+            <form id="add-task-form">
+                <div class="task-input-container">
+                    <input autofocus id="task-input" type='text' required placeholder="Task Name" />
+                    <button type="submit" onclick="addTask(event)">Save</button>
+                    <button style="display: flex;align-items:center;" type="button" class="other-options-button"
+                        onclick="handleOtherAddOptionsVis()" title="Other options">
+                        <img src="icons/more-options.svg" width="24" />
+                    </button>
+                </div>
+                <div class="other-add-options">
+                    <div>
+                        <label for="due-date">Due Date and Time</label>
+                        <input type="date" name="due-date" id="due-date">
+                        <input type="time" name="due-time" id="due-time">
+                    </div>
+                    <div>
+                        <label for="priority">Priority</label>
+                        <select name="priority" id="priority">
+                            <option value="None">None</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="reminder">Reminder</label>
+                        <!-- <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 -960 960 960" width="48">
+                                <path
+                                    d="M120-566q0-90 40-165t107-125l36 48q-56 42-89.5 104.5T180-566h-60Zm660 0q0-75-33.5-137.5T657-808l36-48q67 50 107 125t40 165h-60ZM160-200v-60h80v-304q0-84 49.5-150.5T420-798v-22q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v22q81 17 130.5 83.5T720-564v304h80v60H160Zm320-302Zm0 422q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM300-260h360v-304q0-75-52.5-127.5T480-744q-75 0-127.5 52.5T300-564v304Z" />
+                            </svg>
+                        </span> -->
+                        <input type="datetime-local" name="reminder" id="reminder">
+                    </div>
+                    <div>
+                        <label for="category">Category</label>
+                        <select name="category" id="category">
+                            <option value="None">None</option>
+                            <option value="Health">Health</option>
+                            <option value="Work">Work</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Ideas">Ideas</option>
+                            <option value="Cooking">Cooking</option>
+                        </select>
+                    </div>
+                    <div class="tags-input-container">
+                        <label for="tags-input" style="margin-right: 4px">Tags</label>
+                        <input type="text" id="tags-input" onkeyup="handleTagFormation(event)"
+                            placeholder="Comma(,) separated tags" name="tags-input" />
+                        <div class="tags-details" name="tags-details">
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
         <div class="table-container">
             <div class="messages-container">
@@ -38,18 +90,90 @@
                         d="M810.65984 170.65984q18.3296 0 30.49472 12.16512t12.16512 30.49472q0 18.00192-12.32896 30.33088l-268.67712 268.32896 268.67712 268.32896q12.32896 12.32896 12.32896 30.33088 0 18.3296-12.16512 30.49472t-30.49472 12.16512q-18.00192 0-30.33088-12.32896l-268.32896-268.67712-268.32896 268.67712q-12.32896 12.32896-30.33088 12.32896-18.3296 0-30.49472-12.16512t-12.16512-30.49472q0-18.00192 12.32896-30.33088l268.67712-268.32896-268.67712-268.32896q-12.32896-12.32896-12.32896-30.33088 0-18.3296 12.16512-30.49472t30.49472-12.16512q18.00192 0 30.33088 12.32896l268.32896 268.67712 268.32896-268.67712q12.32896-12.32896 30.33088-12.32896z" />
                 </svg>
             </div>
-            <table id="task-table">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Sr. No</th>
-                        <th class="task-title">Task Title</th>
-                        <th colspan="2">Action</th>
-                    </tr>
-                </thead>
-                <tbody id='task-wrapper'>
-                </tbody>
-            </table>
+            <div class="task-sort-filter-container">
+                <form class="task-search-container">
+                    <input type="text" id="task-search-input" class="task-search-input" placeholder="Search..."
+                        onkeyup="renderAllTasks()" />
+                    <select id="task-search-select" onchange="renderAllTasks()">
+                        <option value="name">Name</option>
+                        <option value="tag">Tag</option>
+                        <option value="subtask">Subtask</option>
+                    </select>
+                </form>
+                <div style="display: flex; align-items: center;">
+                    <select name="activity-filters" id="activity-filters" onchange="renderAllTasks()">
+                        <option value="default">Default(all)</option>
+                        <option value="pending">Pending</option>
+                        <option value="missed">Missed</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <button type="button" class="filter-button" onclick="handleFilterVis()">
+                        <img src="icons/filter_list.svg" alt="" width="24">
+                    </button>
+                    <button type="button" class="sort-button" onclick="handleSortVis()">
+                        <img src="icons/sort.svg" width="24" />
+                    </button>
+                </div>
+                <form class="filter-options-container" id="filter-form">
+                    <div>
+                        <label for="due-date-start">Select Due Date Range</label>
+                        <input type="date" name="due-date-start" id="due-date-start filter">
+                        <input type="date" name="due-date-end" id="due-date-end filter">
+                    </div>
+                    <div>
+                        <label for="category-filter">Categories</label>
+                        <select name="category-filter" id="category-filter">
+                            <option value="all">Default(All)</option>
+                            <option value="None">None</option>
+                            <option value="Health">Health</option>
+                            <option value="Work">Work</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Ideas">Ideas</option>
+                            <option value="Cooking">Cooking</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="priority-filter">Priority</label>
+                        <select name="priority-filter" id="priority-filter">
+                            <option value="all">Default(All)</option>
+                            <option value="None">None</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <button type="button" id="filter-start-btn" onclick="renderAllTasks()">Filter</button>
+                    <button type="button" id="filter-reset-btn" onclick="resetFilter()">Reset All</button>
+                </form>
+                <form class="sort-options-container" id="sort-form">
+                    <div>
+                        <input type="radio" value="default" name="sort-option" id="sort-default">
+                        <label for="sort-default">Default</label>
+                    </div>
+                    <div>
+                        <input type="radio" value="dueDate" name="sort-option" id="sort-dueDate" checked>
+                        <label for="sort-dueDate">Due Date</label>
+                    </div>
+                    <div>
+                        <input type="radio" value="priority" name="sort-option" id="sort-priority">
+                        <label for="sort-priority">Priority</label>
+                    </div>
+                    <div>
+                        <input type="radio" value="title" name="sort-option" id="sort-name">
+                        <label for="sort-name">Name</label>
+                    </div>
+                    <select name="sort-ordering" id="sort-ordering">
+                        <option value="Ascending">Ascending</option>
+                        <option value="Descending">Descending</option>
+                    </select>
+                    <button type="button" id="sort-start-btn" onclick="renderAllTasks()">Sort</button>
+                    <button type="button" id="sort-reset-btn" onclick="resetSort()">Reset All</button>
+                </form>
+            </div>
+            <div>
+                <div id='task-wrapper'>
+                </div>
+            </div>
         </div>
     </div>
 </body>

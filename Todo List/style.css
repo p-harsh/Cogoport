@@ -6,57 +6,35 @@
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
 }
-table {
-    font-family: arial, sans-serif;
-    max-width: 95%;
-    padding: 16px;
-    margin-inline: auto;
-    border-collapse: collapse;
-}
-
-tr {
-    width: 100%;
-}
-
-td,
-th {
-    border: 1px solid #ffffff;
-    text-align: left;
-    padding: 8px;
-    width: fit-content;
-}
-
-tr:nth-child(even) {
-    background-color: #eeeeeec0;
-}
-
-tr:nth-child(odd){
-    background-color: #eeeeee22;
-}
 
 button{
     font-weight: 600;
 }
 
+body{
+    min-height: 100vh;
+    background: #e6e6e673;
+}
+
 .task-input-row {
     position: sticky;
-    z-index: 1;
+    z-index: 2;
     top: 0;
     padding-block: 16px;
-    background: white;
-    box-shadow: 0.5px 4px 4px 0px rgba(225, 225, 225, 0.363);
+    background: rgb(255, 208, 106);
+    box-shadow: 0.5px 4px 4px 0px rgba(233, 233, 233, 0.363);
 }
 
 .task-input-row h2 {
     padding-bottom: 8px;
 }
 
-.task-input-row input {
+#task-input{
     padding: 8px;
     border-radius: 4px;
     border: none;
     border: 2px solid rgb(184, 184, 184);
-    width: 40%;
+    width: min(90%, 500px);
 }
 .task-input-row input:focus {
     outline: none;
@@ -65,19 +43,22 @@ button{
 .task-input-row button,
 .task-action-container button {
     padding: 10px 16px;
-    background: #3aa13a;
+    background: #1d9669;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    margin: 4px;
 }
 .task-input-row {
     text-align: center;
-    margin: 12px 0;
+    margin: 0px 0 12px 0;
 }
 
 .task-title {
     width: min(70dvw, 500px);
+    flex: 1;
+    margin-left: 16px;
 }
 
 .task-title input[type="text"]{
@@ -96,19 +77,207 @@ button{
 
 .table-container{
     position: relative;
+    width: min(750px, 90%);
+    margin-inline: auto;
 }
 
-thead {
-    background: rgb(210, 210, 210);
-    position: sticky;
-    top: 115px;
-    box-shadow: 0 1px 6px rgba(169,188,218,.65);
+.task-table-header{
+    display: flex;
 }
 
-th{
-    padding-block: 16px;
+/*  */
+/*  */
+/*  */
+#activity-filters{
+    padding: 4px;
+    outline: none;
+    border: none;
+    border: 2px solid rgb(211, 211, 211);
+    cursor: pointer;
+    margin-inline-start: 8px;
+    border-radius: 8px;
 }
 
+/*  */
+/* Filter */
+/*  */
+
+.filter-button, .sort-button{
+    outline: none;
+    border: none;
+    background: none;
+    padding: 4px;
+    border: 2px solid rgb(211, 211, 211);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-inline: 8px;
+}
+
+.task-sort-filter-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    margin-inline: 16px;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.filter-options-container, .sort-options-container{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 250px;
+    box-shadow: 2px 2px 10px rgba(214, 214, 214, 0.832);
+}
+
+.filter-options-container > div{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.filter-options-container, .sort-options-container{
+    position: absolute;
+    top: 40px;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    z-index: 1;
+}
+
+.sort-options-container{
+    align-items: flex-start;
+}
+
+.sort-options-container select{
+    border: 1px solid rgb(120, 120, 120, 0.5);
+    padding: 8px 8px 8px 0;
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+
+.filter-options-container button, .sort-options-container button{
+    outline: none;
+    background: none;
+    border: none;
+    padding: 6px 10px;
+    margin-block: 2px;
+}
+
+#filter-start-btn, #sort-start-btn{
+    background: rgb(9, 169, 129);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#filter-reset-btn, #sort-reset-btn{
+    color: red;
+    text-decoration: underline;
+    padding-right: 0;
+    cursor: pointer;
+}
+
+#sort-reset-btn{
+    padding-left: 0;
+}
+
+.filter-options-container input, .filter-options-container select{
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    border: 1px solid rgba(184, 184, 184, 0.662);
+    margin-block: 4px;
+}
+
+.task-sort-filter-container .task-search-container{
+    position: relative;
+    flex: 1;
+}
+
+.task-sort-filter-container .task-search-container input{
+    width: 100%;
+    padding: 4px 12px;
+    height: 36px;
+    border: 1px solid rgba(184, 184, 184, 0.662);
+    border-radius: 16px;
+}
+
+.task-sort-filter-container .task-search-container select{
+    position: absolute;
+    right: 8px;
+    padding: 4px;
+    background: none;
+    border: none;
+    border: 0px solid rgba(184, 184, 184, 0.862);
+    border-radius: 8px;
+    cursor: pointer;
+    top: 4px;
+}
+
+/*  */
+/*  */
+/*  */
+
+
+#task-wrapper .task{
+    margin-inline: auto;
+    width: 100%;
+    margin-block: 8px;
+}
+
+#task-wrapper .task .task-upper-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+#task-wrapper .task form{
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    border: none;
+    border-top: 1.5px solid rgba(128, 128, 128, 0.307);
+    border-bottom: 1.5px solid rgba(128, 128, 128, 0.307);
+    position: relative;
+}
+
+#task-wrapper .task .task-form-saving{
+    border: 1.5px solid rgb(120, 120, 120);
+    border-radius: 24px;
+}
+
+select[name="priority"] option[value="Low"]{
+    background: yellow;
+}
+select[name="priority"] option[value="Medium"]{
+    background: orange;
+}
+select[name="priority"] option[value="High"]{
+    background: red;
+}
+
+.task-checkbox{
+    margin-inline: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#task-priority{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 24px;
+    background: black;
+}
 /*  */
 /*  */
 /*  */
@@ -117,6 +286,10 @@ input[type="checkbox"]{
     width: 16px;
     height: 16px;
     cursor: pointer;
+}
+
+.task-action-container{
+    display: flex;
 }
 
 .task-action-container .edit-btn{
@@ -146,6 +319,23 @@ input[type="checkbox"]{
     padding: 6px 10px;
     width: 36px;
     height: 36px;
+    margin-inline: 8px;
+}
+
+.task-action-container .add-subtask{
+    background: none;
+    border: 1px solid rgb(221, 221, 221);
+}
+
+/*  */
+/*  */
+/*  */
+.other-add-options{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    display: none;
 }
 
 /*  */
@@ -230,7 +420,7 @@ input[type="checkbox"]{
 .messages-container{
     height: 24px;
     position: fixed; 
-    width: 90%;
+    width: min(90%, 500px);
     top: 160px;
     display: flex;
     justify-content: space-between;
@@ -243,4 +433,177 @@ input[type="checkbox"]{
     padding-inline: 8px;
     opacity: 0;
     transition: opacity 0.5s;
+    display: none;
+}
+
+/*  */
+/*  */
+/*  */
+.task-input-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.task-input-container svg{
+    width: 24px;
+    height: 24px;
+}
+
+.task-input-container .other-options-button{
+    background: none;
+    all: unset;
+    padding: 8px;
+    border-radius: 12px;
+    margin-inline: 4px;
+    border: 1.5px solid grey;
+    cursor: pointer;
+
+}
+
+/*  */
+/*  */
+/*  */
+#add-task-form{
+    width: min(90%, 500px);
+    margin-inline: auto;
+}
+#add-task-form select{
+    height: 36px;
+    border-radius: 8px;
+}
+
+.other-add-options{
+    padding-block: 8px;
+}
+
+.other-add-options select, .other-add-options input{
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    border: 1px solid rgba(184, 184, 184, 0.662);
+}
+
+.other-add-options label{
+    font-size: 14px;
+}
+
+.other-add-options > div{
+    margin: 8px;
+}
+/*  */
+/* Tag */
+/*  */
+#tags-input{
+    min-width: 200px;
+}
+
+.tags-details{
+    display: flex;
+}
+
+.tag{
+    padding: 2px 6px;
+    border-radius: 8px;
+    background:rgba(214, 214, 214, 0.34);
+    cursor: pointer;
+    margin-inline: 8px;
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tags-input-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-middle-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-left: 48px;
+    margin-right: 16px;
+}
+
+.task-middle-container .tag-icon-name-container{
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+
+.task-middle-container .tag-icon-name-container > div{
+    display: flex;
+    align-items: center;
+    margin-inline-end: 4px;
+}
+.task-middle-container .category-container{
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    text-decoration: underline;
+    text-transform: uppercase;
+}
+
+.task-middle-container .due-date-detail{
+    margin-inline-end: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+/*  */
+/*  */
+/*  */
+/*  */
+
+.other-edit-actions{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 8px;
+}
+
+.other-edit-actions > div{
+    margin: 8px;
+}
+
+.other-edit-actions input, .other-edit-actions select{
+    padding: 4px;
+    border-radius: 8px;
+    border: none;
+    border: 1px solid rgba(184, 184, 184, 0.662);
+}
+
+/*  */
+/* Filter */
+/*  */
+
+.filter-options-container, .sort-options-container{
+    display: none;
+}
+
+/*  */
+/*  */
+/*  */
+.subtask-title-input{
+    width: 100%
+}
+.subtask-title-input input{
+    width: 50%;
+    height: 36px;
+}
+.subtask-title-input button{
+    outline: none;
+    border: none;
+    padding: 8px 10px;
+    background: #1d9669;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/*  */
+/*  */
+/*  */
+#task-wrapper .subtask{
+    padding-left: 10%;
+    width: 90%;
+    border-left: 2px dashed black;
 }
