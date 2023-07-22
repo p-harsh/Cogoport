@@ -26,7 +26,7 @@
             </h2>
             <form id="add-task-form">
                 <div class="task-input-container">
-                    <input autofocus id="task-input" type='text' required placeholder="Task Name" />
+                    <input autofocus id="task-input" type='text' required placeholder="Task Name" onkeyup="handleTaskAddKey(event)"/>
                     <button type="submit" onclick="addTask(event)">Save</button>
                     <button style="display: flex;align-items:center;" type="button" class="other-options-button"
                         onclick="handleOtherAddOptionsVis()" title="Other options">

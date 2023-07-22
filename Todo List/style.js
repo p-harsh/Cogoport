@@ -1,5 +1,6 @@
 let allTasks = [];
 let allSubtasks = [];
+let taskReminderId = [];
 let lastUsedId = 0;
 let lastUsedSubtaskId = 0;
 let localStorageTaskKey = "toDoListTask";
@@ -71,8 +72,19 @@ function handleDateName(d) {
     currentDate = removeTime(currentDate);
     var nextWeek = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000); // next week date from current date using millisecond calculations
 
+    let yesterdayDate = new Date(currentDate);
+    yesterdayDate.setDate(currentDate.getDate() - 1);
+
+    // check for previous days
+    if (date.getTime() < currentDate.getTime()) {
+        if (checkSameDay(date, yesterdayDate))
+            return `<span style='color: red;'>Yesterday</span>`;
+        return `<span style='color: red;'>${date
+            .toDateString()
+            .slice(0, -4)}</span>`;
+    }
     // check for today
-    if (checkSameDay(date, currentDate)) {
+    else if (checkSameDay(date, currentDate)) {
         return "<span style='color: green'>Today</span>";
     }
 
@@ -84,7 +96,7 @@ function handleDateName(d) {
         return "<span style='color: orange'>Tomorrow</span>";
     }
     // check if given date is in this or next week
-    if (date.getTime() < nextWeek.getTime()) {
+    if (date.getTime() <= nextWeek.getTime()) {
         return `<span style="color: #13b7ec">${getDayName(date)}</span>`;
     }
     // if more than one week
@@ -109,7 +121,7 @@ function renderTaskEditor(task, type = "task") {
                         ? `<h3 style="width: 100%; text-align: center;">Add Subtask</h3>
                         <div class="subtask-title-input">
                     <input type='text' name='subtask-title' placeholder='Enter Subtask Name...'/>
-                    <button type='button' onclick='addSubtask(event, ${task.id})'>Save</button>
+                    <button type='button' onclick='addSubtask(event, "${task.id}")'>Save</button>
                 </div>`
                         : ""
                 }
@@ -197,14 +209,16 @@ function renderTask(task, type = "task") {
     <div class="${type} task id-${task.id}">
                 <form id="form-${type + "-" + task.id}" class="${
         task.id === savingId ? "task-form-saving" : ""
-    }">
+    }"
+        style="border-color: ${checkMissedTask(task) ? "red" : ""}"
+    >
                 <div class='task-upper-container'>
                     <div
                     class="task-checkbox">
                     <input required ${task.checked ? "checked" : null}
-                        onclick="handleCheckbox(event, ${
+                        onclick="handleCheckbox(event, '${
                             task.id
-                        }, '${type}')" name="task-completed"
+                        }', '${type}')" name="task-completed"
                         type='checkbox'/>
                     </div>
                     <div class="task-title">
@@ -225,17 +239,17 @@ function renderTask(task, type = "task") {
                             task.id === savingId
                                 ? `<button type='button' 
                                 class="save-btn" 
-                                onclick="saveTask(event, ${task.id}, '${type}')" 
+                                onclick="saveTask(event, '${task.id}', '${type}')" 
                                 title="Save Task">
                             <span><img src="icons/save.svg"/></span>
                         </button>`
-                                : `<button type='button' class="edit-btn" onclick="editTask(${task.id})" title="Edit Task">
+                                : `<button type='button' class="edit-btn" onclick="editTask('${task.id}')" title="Edit Task">
                             <span><img src="icons/edit_ink.svg"/></span>
                         </button>`
                         }
                         ${
                             type === "task"
-                                ? `<button type='button' title="Add Subtask" class="add-subtask" onclick="handleAddingSubtask(${task.id})">
+                                ? `<button type='button' title="Add Subtask" class="add-subtask" onclick="handleAddingSubtask('${task.id}')">
                                 <span><img src="icons/add_task.svg"/></span>
                                 </button>`
                                 : ""
@@ -243,7 +257,7 @@ function renderTask(task, type = "task") {
 
                         <button type='button' 
                         class="delete-btn" 
-                        onclick="deleteTask(event, ${task.id}, '${type}' )">
+                        onclick="deleteTask(event, '${task.id}', '${type}' )">
                             <span><img src="icons/delete.svg"/></span>
                         </button>
                     </div>
@@ -252,10 +266,25 @@ function renderTask(task, type = "task") {
                 <div class="task-middle-container">
                         <div style="display: flex;">
                         ${
+                            task?.priority === "Low"
+                                ? `<img src="icons/priority_low.svg" width='16'/>`
+                                : task?.priority === "High"
+                                ? `<img src="icons/priority_high.svg" width='16'/>`
+                                : task?.priority === "Medium"
+                                ? `<img src="icons/priority_medium.svg" width='16'/>`
+                                : ""
+                        }
+                        ${
                             task?.dueDate
                                 ? `<div class='due-date-detail'>
                                 ${handleDateName(task.dueDate)}
                             </div>`
+                                : ""
+                        }
+
+                        ${
+                            task?.dueTime
+                                ? `<div class='due-time-detail'>${task.dueTime}</div>`
                                 : ""
                         }
                             ${
@@ -320,7 +349,7 @@ function updateTaskWrapperHtml(tasks, subtasks) {
         //         taskWrapperHtml + renderTask(foundSubtask, ind, "subtask");
         // });
         let associatedSubtasks = subtasks.filter(
-            (subtask) => subtask.parentTaskId == task.id
+            (subtask) => subtask.parentTaskId === task.id
         );
         associatedSubtasks.forEach((subtask) => {
             taskWrapperHtml = taskWrapperHtml + renderTask(subtask, "subtask");
@@ -343,10 +372,38 @@ function getProcessedTasks() {
     return { tasks: activtyFilteredTasks, subtasks: tmp2 };
 }
 
+function checkMissedReminder(task) {
+    let currDate = new Date();
+    let reminderDateTime = new Date(task["reminder"]);
+    if (isNaN(reminderDateTime)) return true;
+    if (task.checked) return true;
+    return reminderDateTime.getTime() < currDate.getTime();
+}
+
+function updateReminder(tasks, subtasks) {
+    // remove all the reminders placed before
+    taskReminderId.forEach((id) => clearTimeout(id));
+    taskReminderId = [];
+    function updateTaskReminder(task) {
+        if (!task.checked && task["reminder"] && !checkMissedReminder(task)) {
+            let timeDiff =
+                new Date(task["reminder"]).getTime() - new Date().getTime();
+            let timeoutId = setTimeout(
+                () => alert(`Do task - ${task.title}`),
+                timeDiff
+            );
+            taskReminderId.push(timeoutId);
+        }
+    }
+    tasks.forEach((task) => updateTaskReminder(task));
+    subtasks.forEach((subtask) => updateTaskReminder(subtask));
+}
+
 function renderAllTasks() {
     updateLocalStorage();
     let { tasks, subtasks } = getProcessedTasks();
     updateTaskWrapperHtml(tasks, subtasks);
+    updateReminder(tasks, subtasks);
 }
 
 function renderFilteredTasks(filteredTasks) {
@@ -487,6 +544,7 @@ function resetInput() {
     inputForm["priority"].value = "None";
     inputForm["reminder"].value = "";
     inputForm["category"].value = "None";
+    inputForm["tags-input"].nextElementSibling.innerHTML = "";
 }
 
 function addTask(event) {
@@ -511,7 +569,7 @@ function addTask(event) {
         return;
     }
     allTasks.push({
-        id: ++lastUsedId,
+        id: `task-${++lastUsedId}`,
         title: taskValue,
         checked: false,
         dueDate: dueDate,
@@ -528,22 +586,28 @@ function addTask(event) {
     // createMessage({"message": "Successfully Added Task", color: "white", background: "rgb(0,200,0)", time: 1000})
 }
 
-function deleteTask(event, id) {
+function deleteTask(event, id, type) {
     event.preventDefault();
-    if (type === "task") allTasks = allTasks.filter((task) => task.id !== id);
-    else if (type === "subtask")
+    if (type === "task") {
+        allTasks = allTasks.filter((task) => task.id !== id);
+        allSubtasks = allSubtasks.filter(
+            (subtask) => subtask.parentTaskId !== id
+        );
+    } else if (type === "subtask")
         allSubtasks = allSubtasks.filter((subtask) => subtask.id !== id);
     renderAllTasks();
 }
 
 function preProcessData() {
     allTasks.forEach((task, ind) => {
-        task.id = ind + 1;
+        task.id = `task-${ind + 1}`;
     });
     allSubtasks.forEach((subtask, ind) => {
         subtask.id = `subtask-${ind + 1}`;
     });
 }
+
+// Load data from localStorage
 
 window.addEventListener("DOMContentLoaded", () => {
     if (JSON.parse(localStorage.getItem(localStorageTaskKey))?.length > 0) {
@@ -563,24 +627,12 @@ window.addEventListener("DOMContentLoaded", () => {
     renderAllTasks();
 });
 
-function addEditTaskFormRules() {
-    document.getElementById("due-date").min = new Date()
-        .toISOString()
-        .split("T")[0];
-
-    document.getElementById("reminder").min = new Date()
-        .toISOString()
-        .split(".")[0];
-}
-
 let tagTempList = [];
 
 function createTag(title) {
     let tag = `<span class='tag' onclick="removeTag(this)" >${title}</span>`;
     return tag;
 }
-
-addEditTaskFormRules();
 
 function handleTagFormation(e) {
     let keyTyped = e.key;
@@ -597,11 +649,16 @@ function removeTag(element) {
 }
 function handleOtherAddOptionsVis() {
     // e.preventDefault();
-    if (isOtherOptionVis)
+    if (isOtherOptionVis) {
+        resetInput();
         document.querySelector(".other-add-options").style.display = "none";
-    else document.querySelector(".other-add-options").style.display = "flex";
+    } else document.querySelector(".other-add-options").style.display = "flex";
     isOtherOptionVis = !isOtherOptionVis;
 }
+
+//
+// Filtering
+//
 
 function handleFilterVis() {
     if (isFilterVis)
@@ -660,6 +717,10 @@ function resetFilter(event) {
     filterForm["priority-filter"].value = "all";
     renderAllTasks();
 }
+
+//
+// Sorting
+//
 
 function handleSortVis() {
     if (isSortVis)
@@ -728,7 +789,7 @@ function resetSort() {
 }
 
 //
-//
+// Search Tasks
 //
 
 function handleTaskSearch(tasks) {
@@ -759,12 +820,21 @@ function handleTaskSearch(tasks) {
     }
     return tasks;
 }
-// sorting - due date, priority, Name
-//
-// View - For Missing and Pending
-//      - To show activity logs of all the tasks
-// Date Auto Complete
-// Drag and Drop
+
+function checkPendingTask(task) {
+    let currDate = new Date();
+    let dueDateTime = new Date(task["dueDate"] + " " + task["dueTime"]);
+    if (isNaN(dueDateTime)) return true;
+    return dueDateTime.getTime() > currDate.getTime();
+}
+
+function checkMissedTask(task) {
+    let currDate = new Date();
+    let dueDateTime = new Date(task["dueDate"] + " " + task["dueTime"]);
+    if (isNaN(dueDateTime)) return false;
+    if (task.checked) return false;
+    return dueDateTime.getTime() < currDate.getTime();
+}
 
 function handleActivityFiltered(tasks) {
     let activityFilters = document.getElementById("activity-filters");
@@ -772,14 +842,10 @@ function handleActivityFiltered(tasks) {
     if (selectedFilterVal === "default") return tasks;
 
     tasks = tasks.filter((task) => {
-        let currDate = new Date();
-        let dueDateTime = new Date(task["dueDate"] + " " + task["dueTime"]);
         if (selectedFilterVal === "pending" && !task["checked"]) {
-            if (isNaN(dueDateTime)) return true;
-            return dueDateTime.getTime() > currDate.getTime();
+            return checkPendingTask(task);
         } else if (selectedFilterVal === "missed" && !task["checked"]) {
-            if (isNaN(dueDateTime)) return true;
-            return dueDateTime.getTime() < currDate.getTime();
+            return checkMissedTask(task);
         } else if (selectedFilterVal === "completed") {
             return task.checked;
         }
@@ -801,4 +867,67 @@ function handleAddingSubtask(id) {
     if (!addingSubtaskId) addingSubtaskId = id;
     else addingSubtaskId = null;
     renderAllTasks();
+}
+
+//
+// auto complete feature
+//
+function getTimeOnly() {
+    let timeOnlyArr = timeOnly.split(":");
+    let d = new Date();
+    if (timeOnlyArr.length > 0) d.setHours(parseInt(timeOnlyArr[0]));
+    if (timeOnlyArr.length > 1) d.setMinutes(parseInt(timeOnlyArr[1]));
+    if (timeOnlyArr.length > 2) d.setSeconds(parseInt(timeOnlyArr[2]));
+    return d;
+}
+function fixBrokenTime(t) {
+    t = t.toLowerCase();
+    let last2letter = t.slice(-2);
+    if (t.slice(-2) == "am") {
+        let timeOnly = t.split("am")[0].trim();
+        return getTimeOnly(timeOnly);
+    } else if (t.slice(-2) == "pm") {
+        let timeOnly = t.split("pm")[0].trim();
+        return getTimeOnly(timeOnly);
+    } else return "";
+}
+
+function fixBrokenDateTime(d) {
+    let result = { date: "", time: "" };
+
+    if (d.toLowerCase().indexOf("today") !== -1) {
+        result.date = removeTime(new Date());
+        let brokenTime = d.split("today")[1].trim();
+        result.time = fixBrokenTime(brokenTime);
+    } else if (d.toLowerCase().indexOf("tomorrow") !== -1) {
+        result.date = removeTime(new Date(new Date().getDate() + 1));
+        let brokenTime = d.split("tomorrow")[1].trim();
+        result.time = fixBrokenTime(brokenTime);
+    } else {
+        return result;
+    }
+}
+
+function checkInputSyntax(value) {
+    if (value.indexOf(" by ") === -1) return false;
+    let tmp = value.split(" by ");
+    if (tmp.length !== 2) return false;
+    return true;
+}
+
+//
+// Need to Work on this
+//
+function handleTaskAddKey(event) {
+    let inputVal = event.currentTarget.value;
+    if (checkInputSyntax(inputVal)) {
+        let tmp = inputVal.split(" by ");
+        let title = tmp[0].trim();
+        let brokenDateTime = tmp[1].trim();
+        if (isNaN(new Date(brokenDateTime))) {
+            let { date, time } = fixBrokenDateTime(brokenDateTime);
+        } else {
+            //
+        }
+    }
 }
