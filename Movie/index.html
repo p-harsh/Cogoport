@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <div class="app">
+        <div class="loading-container loading-inactive">
+            <div class="loading">
+                <div class="lds-ellipsis">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        <section class="search-movies">
+            <h2>SEARCH MOVIES</h2>
+            <div class="search-input-container">
+                <input type="text" name="search-input" id="search-input" onkeyup="handleMovieSearch(event)"
+                    placeholder="Search Movie..." />
+            </div>
+        </section>
+        <section class="movie-grid-container">
+            <div class="movie-grid" id="movie-grid"></div>
+            <div class="pagination-container" id="pagination-container">
+                <button class="left-arrow" id="left-arrow-pagination" onclick="handlePreviousPage()">
+                    <img src="icons/chevron_left.svg" alt="Prev" width="24">
+                </button>
+                <input class="pagination-number" id="pagination-number" type="text" value="1"
+                    onkeyup="handlePageMovieList(event)" />
+                <button class="arrow-arrow" id="right-arrow-pagination" onclick="handleNextPage()">
+                    <img src="icons/chevron_right.svg" alt="Next" width="24">
+                </button>
+            </div>
+            <dialog style="margin: auto;" class="movie-dialog dialog-box" id="movie-dialog">
+                <div class="movie-detail-dialog" id="movie-detail-dialog">
+                </div>
+                <div class="dialog-footer">
+                    <button onclick="closeDialog()" class="close-dialog-btn">Close</button>
+                </div>
+            </dialog>
+        </section>
+    </div>
+</body>
+<script src="script.js"></script>
+
+</html>
