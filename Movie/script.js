@@ -1,14 +1,89 @@
+let APIKEY = "26c69b1";
+let APIKEY2 = "c1dc1c18";
+let BATCH_TOTAL = 10;
+var LS_KEY = "movieData";
 let currPageNumber = 1;
-let apikey = "26c69b1";
-let apikey2 = "c1dc1c18";
-let apiBaseLink = `https://www.omdbapi.com/?apikey=${apikey}`;
-let batchTotal = 10;
+let apiBaseLink = `https://www.omdbapi.com/?APIKEY=${APIKEY}`;
 let userSavedData = [];
-
 let movieList = [];
+
+//
+// Utility functions
+//
 
 function showError(error) {
     alert(error);
+}
+
+function checkAlphanumSpecialString(value) {
+    return /^[ A-Za-z0-9_@./#&+-]*$/.test(value);
+}
+
+function isNumeric(value) {
+    return /^-?\d+$/.test(value);
+}
+//
+// Loading Screen
+//
+function changeLoading(willLoad) {
+    if (willLoad === true)
+        document
+            .querySelector(".loading-container")
+            .classList.replace("loading-inactive", "loading-active");
+    else if (willLoad === false)
+        document
+            .querySelector(".loading-container")
+            .classList.replace("loading-active", "loading-inactive");
+}
+// to not allow too many firing of api
+function debounce(inner, ms = 500) {
+    let timer = null;
+    let resolves = [];
+
+    return function (...args) {
+        // Run the function after a certain amount of time
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            // Get the result of the inner function, then apply it to the resolve function of
+            // each promise that has been created since the last time the inner function was run
+            let result = inner(...args);
+            resolves.forEach((r) => r(result));
+            resolves = [];
+        }, ms);
+
+        return new Promise((r) => resolves.push(r));
+    };
+}
+
+//
+// load data from localStorage
+//
+
+window.addEventListener("DOMContentLoaded", () => {
+    loadLocalStorageData();
+    renderMovieList();
+});
+
+function loadLocalStorageData() {
+    if (JSON.parse(localStorage.getItem(LS_KEY))?.length > 0) {
+        userSavedData = JSON.parse(localStorage.getItem(LS_KEY));
+    }
+}
+
+function updateLocalStorage() {
+    localStorage.setItem(LS_KEY, JSON.stringify(userSavedData));
+}
+
+//
+// Rendering and Event Handler Functions
+//
+
+function removePagination(){
+    document.getElementById("pagination-container").style.visibility = "hidden";
+}
+
+function addPagination(){
+    document.getElementById("pagination-container").style.visibility = "visible";
 }
 
 function renderMovieRow(movie) {
@@ -23,8 +98,8 @@ function renderMovieRow(movie) {
         <div class='movie-detail'>
             <div class='movie-detail-upper-container'>
                 <div class='movie-title'><h3>${movie.Title}</h3></div>
+                </div>
                 <div class='movie-year'>${movie.Year}</div>
-            </div>
             ${
                 movie?.Director
                     ? `<div class='movie-detail-middle-container'>
@@ -49,6 +124,10 @@ function renderMovieRow(movie) {
 function renderMovieList() {
     let movieGrid = document.getElementById("movie-grid");
     let gridHtml = "";
+    if(movieList.length === 0){
+        removePagination();
+    }
+    else addPagination();
     movieList.forEach((movie) => {
         gridHtml += `
             ${renderMovieRow(movie)}
@@ -56,16 +135,6 @@ function renderMovieList() {
     });
     movieGrid.innerHTML = gridHtml;
     renderPageNumber();
-}
-
-function updateMovieList(link) {
-    fetch(link)
-        .then((res) => res.json())
-        .then((data) => {
-            movieList = data;
-            renderMovieList();
-        })
-        .catch((err) => console.log(err));
 }
 
 function renderRatingStars(rating) {
@@ -124,7 +193,7 @@ function renderMovieDetail(movie) {
                     }
                     ${
                         savedData?.comment
-                            ? `<div class='saved-comment'>${savedData?.comment}</div>`
+                            ? `<div class='saved-comment'><span><img src='icons/comment.svg' width='16'/></span>${savedData?.comment}</div>`
                             : ""
                     }
                 </div>
@@ -196,8 +265,8 @@ function renderPageNumber(totalResults = Infinity) {
             .removeAttribute("disabled");
     // check if nextpage will be out of bound
     if (
-        Math.ceil(totalResults / batchTotal) * batchTotal <
-        batchTotal * (currPageNumber + 1)
+        Math.ceil(totalResults / BATCH_TOTAL) * BATCH_TOTAL <
+        BATCH_TOTAL * (currPageNumber + 1)
     ) {
         document
             .getElementById("right-arrow-pagination")
@@ -239,17 +308,17 @@ async function updateListsBySearch(link) {
         });
 }
 
-var timerId;
-let debounceFunction = function (func, delay = 2000) {
-    // Cancels the setTimeout method execution
-    clearTimeout(timerId);
-    // Executes the func after delay time.
-    timerId = setTimeout(func, delay);
-};
-
 async function handleMovieSearch() {
     let searchVal = document.getElementById("search-input").value;
-    if (searchVal == "") return;
+    if (searchVal == "") {
+        movieList = [];
+        renderMovieList();
+        return;
+    }
+    if (!checkAlphanumSpecialString(searchVal)) {
+        showError("Write name in correct syntax");
+        return;
+    }
     currPageNumber = 1;
     let link = encodeURI(
         `${apiBaseLink}&s=${searchVal}&page=${currPageNumber}`
@@ -277,10 +346,6 @@ async function handlePreviousPage() {
     await updateListsBySearch(link);
 }
 
-function isNumeric(value) {
-    return /^-?\d+$/.test(value);
-}
-
 async function handlePageMovieList(event) {
     let searchVal = document.getElementById("search-input").value;
     if (searchVal == "") return;
@@ -305,71 +370,6 @@ async function handlePageMovieList(event) {
     await updateListsBySearch(link);
 }
 
-//
-// Loading
-//
-function changeLoading(willLoad) {
-    if (willLoad === true)
-        document
-            .querySelector(".loading-container")
-            .classList.replace("loading-inactive", "loading-active");
-    else if (willLoad === false)
-        document
-            .querySelector(".loading-container")
-            .classList.replace("loading-active", "loading-inactive");
-}
-
-//
-// load data from localStorage
-//
-
-// to not allow too many firing of api
-function debounce(inner, ms = 500) {
-    let timer = null;
-    let resolves = [];
-
-    return function (...args) {
-        // Run the function after a certain amount of time
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-            // Get the result of the inner function, then apply it to the resolve function of
-            // each promise that has been created since the last time the inner function was run
-            let result = inner(...args);
-            resolves.forEach((r) => r(result));
-            resolves = [];
-        }, ms);
-
-        return new Promise((r) => resolves.push(r));
-    };
-}
-
-const handleDebouncePageChange = debounce(handlePageMovieList, 1000);
-
-const handleDebounceSearch = debounce(handleMovieSearch);
-
-window.addEventListener("DOMContentLoaded", () => {
-    loadLocalStorageData();
-    renderMovieList();
-    document
-        .getElementById("search-input")
-        .addEventListener("keyup", handleDebounceSearch);
-});
-
-var LS_KEY = "movieData";
-
-function loadLocalStorageData() {
-    if (JSON.parse(localStorage.getItem(LS_KEY))?.length > 0) {
-        userSavedData = JSON.parse(localStorage.getItem(LS_KEY));
-    }
-}
-//
-//
-//
-
-function updateLocalStorage() {
-    localStorage.setItem(LS_KEY, JSON.stringify(userSavedData));
-}
-
 function handleSaveRating(event, movie) {
     movie = JSON.parse(decodeURIComponent(movie));
     let imdbID = movie?.imdbID;
@@ -392,3 +392,7 @@ function handleSaveRating(event, movie) {
     updateLocalStorage();
     renderMovieDialog(movie);
 }
+
+const handleDebouncePageChange = debounce(handlePageMovieList, 1000);
+
+const handleDebounceSearch = debounce(handleMovieSearch);
