@@ -607,4 +607,5 @@ input[type="checkbox"]{
     padding-left: 10%;
     width: 90%;
     border-left: 2px dashed black;
+    margin-right: 0;
 }
