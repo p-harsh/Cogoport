@@ -12,6 +12,8 @@ let isFilterVis = false;
 let isSortVis = false;
 // let filteredTasks = [];
 // let sortedTasks = [];
+let categoryList = ["None", "Health", "Work", "Meeting", "Ideas", "Cooking"];
+let priorityList = ["None", "Low", "Medium", "High"];
 
 let priorityOrder = {
     None: 0,
@@ -114,6 +116,35 @@ function getDayName(date = new Date(), locale = "en-US") {
     return date.toLocaleDateString(locale, { weekday: "long" });
 }
 
+function renderPriorityList(task) {
+    return `<select name="priority" value="${task["priority"]}" id="priority">
+    ${priorityList
+        .map(
+            (priority) =>
+                `<option ${checkSelectedValue(
+                    priority,
+                    task["priority"]
+                )} value="${priority}">${priority}</option>`
+        )
+        .join("")}
+        </select>`;
+}
+
+function renderCategoryList(task) {
+    return `<select name="category" id="category"
+                        }">
+                        ${categoryList
+                            .map(
+                                (category) =>
+                                    `<option ${checkSelectedValue(
+                                        category,
+                                        task["category"]
+                                    )} value="${category}">${category}</option>`
+                            )
+                            .join("")}
+                        </select>`;
+}
+
 function renderTaskEditor(task, type = "task") {
     return `<div class="other-edit-actions">
                 ${
@@ -136,26 +167,7 @@ function renderTaskEditor(task, type = "task") {
                     </div>
                     <div>
                         <label for="priority">Priority</label>
-                        <select name="priority" value="${
-                            task["priority"]
-                        }" id="priority">
-                            <option ${checkSelectedValue(
-                                "None",
-                                task["priority"]
-                            )} value="None">None</option>
-                            <option ${checkSelectedValue(
-                                "Low",
-                                task["priority"]
-                            )} value="Low">Low</option>
-                            <option ${checkSelectedValue(
-                                "Medium",
-                                task["priority"]
-                            )} value="Medium">Medium</option>
-                            <option ${checkSelectedValue(
-                                "High",
-                                task["priority"]
-                            )} value="High">High</option>
-                        </select>
+                        ${renderPriorityList(task)}
                     </div>
                     <div>
                         <label for="reminder">Reminder</label>
@@ -165,33 +177,7 @@ function renderTaskEditor(task, type = "task") {
                     </div>
                     <div>
                         <label for="category">Category</label>
-                        <select name="category" id="category"
-                        }">
-                            <option ${checkSelectedValue(
-                                "None",
-                                task["category"]
-                            )} value="None">None</option>
-                            <option ${checkSelectedValue(
-                                "Health",
-                                task["category"]
-                            )} value="Health">Health</option>
-                            <option ${checkSelectedValue(
-                                "Work",
-                                task["category"]
-                            )} value="Work">Work</option>
-                            <option ${checkSelectedValue(
-                                "Meeting",
-                                task["category"]
-                            )} value="Meeting">Meeting</option>
-                            <option ${checkSelectedValue(
-                                "Ideas",
-                                task["category"]
-                            )} value="Ideas">Ideas</option>
-                            <option ${checkSelectedValue(
-                                "Cooking",
-                                task["category"]
-                            )} value="Cooking">Cooking</option>
-                        </select>
+                        ${renderCategoryList(task)}
                     </div>
                     <div class="tags-input-container">
                         <label for="tags-input" style="margin-right: 4px;">Tags</label>
@@ -235,6 +221,8 @@ function renderTask(task, type = "task") {
                     }
                     </div>
                     <div class="task-action-container">
+
+                        <!-- Edit Task and Save Button -->
                         ${
                             task.id === savingId
                                 ? `<button type='button' 
@@ -247,6 +235,8 @@ function renderTask(task, type = "task") {
                             <span><img src="icons/edit_ink.svg"/></span>
                         </button>`
                         }
+
+                        <!-- Add Subtask Button -->
                         ${
                             type === "task"
                                 ? `<button type='button' title="Add Subtask" class="add-subtask" onclick="handleAddingSubtask('${task.id}')">
@@ -254,7 +244,8 @@ function renderTask(task, type = "task") {
                                 </button>`
                                 : ""
                         }
-
+                        
+                        <!-- Delete Button -->
                         <button type='button' 
                         class="delete-btn" 
                         onclick="deleteTask(event, '${task.id}', '${type}' )">
@@ -263,8 +254,12 @@ function renderTask(task, type = "task") {
                     </div>
                 </div>
 
+
+
                 <div class="task-middle-container">
                         <div style="display: flex;">
+
+                        <!-- Priority Icon -->
                         ${
                             task?.priority === "Low"
                                 ? `<img src="icons/priority_low.svg" width='16'/>`
@@ -274,6 +269,8 @@ function renderTask(task, type = "task") {
                                 ? `<img src="icons/priority_medium.svg" width='16'/>`
                                 : ""
                         }
+                        
+                        <!-- Due Date -->
                         ${
                             task?.dueDate
                                 ? `<div class='due-date-detail'>
@@ -282,11 +279,14 @@ function renderTask(task, type = "task") {
                                 : ""
                         }
 
+                        <!-- Due Time -->
                         ${
                             task?.dueTime
                                 ? `<div class='due-time-detail'>${task.dueTime}</div>`
                                 : ""
                         }
+
+                        <!-- Tags -->
                             ${
                                 task?.tags.length > 0
                                     ? `<div class="tag-icon-name-container">
@@ -300,6 +300,7 @@ function renderTask(task, type = "task") {
                             }
                         </div>
 
+                        <!-- Categories -->
                         ${
                             task?.category && task?.category !== "None"
                                 ? `<div class="category-container">
@@ -309,11 +310,14 @@ function renderTask(task, type = "task") {
                         }
                 </div>
 
+                <!-- Bottom Task Editor -->
                 ${
                     savingId === task.id && task.id !== addingSubtaskId
                         ? renderTaskEditor(task)
                         : `<div style="display:none"></div>`
                 }
+
+                <!-- Bottom Task Editor and Subtask Adder -->
                 ${
                     savingId !== task.id && task.id === addingSubtaskId
                         ? renderTaskEditor(
@@ -341,13 +345,6 @@ function updateTaskWrapperHtml(tasks, subtasks) {
     let taskWrapperHtml = "";
     tasks.forEach((task, ind) => {
         taskWrapperHtml = taskWrapperHtml + renderTask(task, "task");
-        // task.subtask.forEach(subtaskId => {
-        //     let foundSubtask = subtasks.find(
-        //         (subtask) => subtask.id === subtaskId
-        //     );
-        //     taskWrapperHtml =
-        //         taskWrapperHtml + renderTask(foundSubtask, ind, "subtask");
-        // });
         let associatedSubtasks = subtasks.filter(
             (subtask) => subtask.parentTaskId === task.id
         );
@@ -366,6 +363,9 @@ function getProcessedTasks() {
     let activtyFilteredTasks = handleActivityFiltered(searchedTasks);
 
     let tmp2 = [...allSubtasks];
+
+    // Doesn't told if subtasks will also be taken in account, if yes uncomment the below code to also take subtasks into account
+
     // let filteredSubtasks = startFilter(tmp2);
     // let sortedSubtasks = startSort(filteredSubtasks);
     // let searchedSubtasks = handleTaskSearch(sortedSubtasks);
@@ -380,8 +380,12 @@ function checkMissedReminder(task) {
     return reminderDateTime.getTime() < currDate.getTime();
 }
 
+//
+// reminder setting
+//
+
 function updateReminder(tasks, subtasks) {
-    // remove all the reminders placed before
+    // remove all the reminders(setTimeout) placed before
     taskReminderId.forEach((id) => clearTimeout(id));
     taskReminderId = [];
     function updateTaskReminder(task) {
