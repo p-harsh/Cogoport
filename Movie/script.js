@@ -168,7 +168,7 @@ function handleMovieDetailDialog(movie) {
             changeLoading(false);
         })
         .catch((err) => {
-            console.log(err)
+            console.log(err);
             changeLoading(false);
         });
 }
@@ -247,8 +247,8 @@ let debounceFunction = function (func, delay = 2000) {
     timerId = setTimeout(func, delay);
 };
 
-async function handleMovieSearch(event) {
-    let searchVal = event.currentTarget.value;
+async function handleMovieSearch() {
+    let searchVal = document.getElementById("search-input").value;
     if (searchVal == "") return;
     currPageNumber = 1;
     let link = encodeURI(
@@ -284,20 +284,24 @@ function isNumeric(value) {
 async function handlePageMovieList(event) {
     let searchVal = document.getElementById("search-input").value;
     if (searchVal == "") return;
-    let updatedNumber = event.currentTarget.value;
-    if (!isNumeric(updatedNumber)) { // if not a number
+    let pageinationNum = document.getElementById("pagination-number");
+    let updatedNumber = pageinationNum.value;
+    if (!isNumeric(updatedNumber)) {
+        // if not a number
         alert("Enter Correct Format");
         return;
     }
     updatedNumber = parseInt(updatedNumber, 10);
-    if(updatedNumber === currPageNumber)// if same value do not call api
+    if (updatedNumber === currPageNumber)
+        // if same value do not call api
         return;
-    
+
     currPageNumber = updatedNumber;
     let link = encodeURI(
         `${apiBaseLink}&s=${searchVal}&page=${currPageNumber}`
     );
     // check if possible
+
     await updateListsBySearch(link);
 }
 
@@ -319,42 +323,36 @@ function changeLoading(willLoad) {
 // load data from localStorage
 //
 
+// to not allow too many firing of api
+function debounce(inner, ms = 500) {
+    let timer = null;
+    let resolves = [];
+
+    return function (...args) {
+        // Run the function after a certain amount of time
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            // Get the result of the inner function, then apply it to the resolve function of
+            // each promise that has been created since the last time the inner function was run
+            let result = inner(...args);
+            resolves.forEach((r) => r(result));
+            resolves = [];
+        }, ms);
+
+        return new Promise((r) => resolves.push(r));
+    };
+}
+
+const handleDebouncePageChange = debounce(handlePageMovieList, 1000);
+
+const handleDebounceSearch = debounce(handleMovieSearch);
+
 window.addEventListener("DOMContentLoaded", () => {
     loadLocalStorageData();
     renderMovieList();
-
-    // renderMovieDialog({
-    //     Title: "The Tit and the Moon",
-    //     Year: "1994",
-    //     Rated: "R",
-    //     Released: "29 Mar 1995",
-    //     Runtime: "90 min",
-    //     Genre: "Comedy, Romance",
-    //     Director: "Bigas Luna",
-    //     Writer: "Cuca Canals, Bigas Luna, Josep Bargalló",
-    //     Actors: "Biel Duran, Mathilda May, Gérard Darmon",
-    //     Plot: "A child cannot stand the idea of having a new brother and dreams about drinking milk from the breasts of his mother again. The child asks the moon to bring him a teet only for him.",
-    //     Language: "Catalan, Spanish, French",
-    //     Country: "Spain, France",
-    //     Awards: "2 wins & 3 nominations",
-    //     Poster: "https://m.media-amazon.com/images/M/MV5BZjcwNTE2YzgtNjM0OC00MzA3LTg3ZjctYzkwYmJhNTBhY2FmXkEyXkFqcGdeQXVyMTA0MjU0Ng@@._V1_SX300.jpg",
-    //     Ratings: [
-    //         {
-    //             Source: "Internet Movie Database",
-    //             Value: "6.3/10",
-    //         },
-    //     ],
-    //     Metascore: "N/A",
-    //     imdbRating: "6.3",
-    //     imdbVotes: "3,292",
-    //     imdbID: "tt0111403",
-    //     Type: "movie",
-    //     DVD: "02 Jan 2019",
-    //     BoxOffice: "N/A",
-    //     Production: "N/A",
-    //     Website: "N/A",
-    //     Response: "True",
-    // });
+    document
+        .getElementById("search-input")
+        .addEventListener("keyup", handleDebounceSearch);
 });
 
 var LS_KEY = "movieData";

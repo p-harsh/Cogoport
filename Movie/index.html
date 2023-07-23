@@ -23,7 +23,7 @@
         <section class="search-movies">
             <h2>SEARCH MOVIES</h2>
             <div class="search-input-container">
-                <input type="text" name="search-input" id="search-input" onkeyup="handleMovieSearch(event)"
+                <input type="text" name="search-input" id="search-input"
                     placeholder="Search Movie..." />
             </div>
         </section>
@@ -34,7 +34,7 @@
                     <img src="icons/chevron_left.svg" alt="Prev" width="24">
                 </button>
                 <input class="pagination-number" id="pagination-number" type="text" value="1"
-                    onkeyup="handlePageMovieList(event)" />
+                    onkeyup="handleDebouncePageChange()" />
                 <button class="arrow-arrow" id="right-arrow-pagination" onclick="handleNextPage()">
                     <img src="icons/chevron_right.svg" alt="Next" width="24">
                 </button>
